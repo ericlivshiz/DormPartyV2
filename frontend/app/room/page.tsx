@@ -1,6 +1,7 @@
 "use client";
 import * as React from "react";
 import { ZegoUIKitPrebuilt } from "@zegocloud/zego-uikit-prebuilt";
+import { useSearchParams } from 'next/navigation'; // Import useSearchParams
 
 function randomID(len: number) {
   let result = "";
@@ -15,13 +16,28 @@ function randomID(len: number) {
   return result;
 }
 
-export function getUrlParams(url?: string) {
-  const urlStr = (url || window.location.href).split("?")[1];
-  return new URLSearchParams(urlStr);
-}
+// Remove the custom getUrlParams function
+// export function getUrlParams(url?: string) {
+//   const urlStr = (url || window.location.href).split("?")[1];
+//   return new URLSearchParams(urlStr);
+// }
 
 export default function App() {
-  const roomID = getUrlParams().get("roomID") || randomID(5);
+  // Use the useSearchParams hook to get URL parameters
+  const searchParams = useSearchParams();
+  const roomID = searchParams.get("roomID");
+
+  console.log(`Attempting to get roomID from URL: ${roomID}`); // Add log here
+
+  // Add a check: if roomID is missing, show an error or redirect
+  if (!roomID) {
+    // You might want to redirect back or show an error message
+    // For example:
+    // const router = useRouter(); // Need to import useRouter from 'next/navigation'
+    // React.useEffect(() => { router.push('/'); }, [router]);
+    return <div>Error: Room ID is missing. Please try matching again.</div>;
+  }
+
   let myMeeting: any = async (element: any) => {
     const appID: number = Number(process.env.NEXT_PUBLIC_APP_ID);
     const serverSecret: string = String(process.env.NEXT_PUBLIC_SERVER_SECRET);
@@ -34,7 +50,7 @@ export default function App() {
     const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
       appID,
       serverSecret,
-      roomID,
+      roomID, // Use the roomID from the URL
       randomID(5),
       randomID(5)
     );
@@ -62,8 +78,14 @@ export default function App() {
         },
       ],
       scenario: {
-        mode: ZegoUIKitPrebuilt.OneONoneCall, // To implement 1-on-1 calls, modify the parameter here to [ZegoUIKitPrebuilt.OneONoneCall].
+        mode: ZegoUIKitPrebuilt.OneONoneCall,
       },
+      // Add this option to disable the pre-join view
+      showPreJoinView: false,
+      // You can add other configurations here if needed
+      // For example, to hide the top bar:
+      // showRoomDetailsButton: false,
+      // showLeavingView: false, // To prevent showing a leaving confirmation
     });
   };
 

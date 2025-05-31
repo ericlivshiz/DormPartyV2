@@ -1,7 +1,8 @@
 "use client";
 import * as React from "react";
-import { ZegoUIKitPrebuilt } from "@zegocloud/zego-uikit-prebuilt";
-import { useSearchParams } from 'next/navigation'; // Import useSearchParams
+// Remove this import:
+// import { ZegoUIKitPrebuilt } from "@zegocloud/zego-uikit-prebuilt";
+import { useSearchParams } from "next/navigation"; // Import useSearchParams
 
 function randomID(len: number) {
   let result = "";
@@ -49,68 +50,70 @@ export default function App() {
       return;
     }
 
-    const appID: number = Number(process.env.NEXT_PUBLIC_APP_ID);
-    const serverSecret: string = String(process.env.NEXT_PUBLIC_SERVER_SECRET);
-    console.log(`APP ID: ${appID}`);
-    console.log(`SERVER SECRET: ${serverSecret}`);
-    if (!appID || !serverSecret) {
-      alert("App ID or Server Secret is missing!");
-      return;
-    }
-    const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
-      appID,
-      serverSecret,
-      roomID, // Use the roomID from the URL
-      randomID(5),
-      randomID(5)
-    );
-    if (!kitToken) {
-      alert("Kit token is invalid!");
-      return;
-    }
-    const zp = ZegoUIKitPrebuilt.create(kitToken);
-    if (!zp) {
-      alert("ZegoUIKitPrebuilt.create returned undefined!");
-      return;
-    }
-
-    // Ensure the container ref is available before joining
-    if (containerRef.current) {
-      zp.joinRoom({
-        container: containerRef.current, // Use the ref here
-        sharedLinks: [
-          {
-            name: "Personal link",
-            url:
-              window.location.protocol +
-              "//" +
-              window.location.host +
-              window.location.pathname +
-              "?roomID=" +
-              roomID,
-          },
-        ],
-        scenario: {
-          mode: ZegoUIKitPrebuilt.OneONoneCall,
-        },
-        // Add this option to disable the pre-join view
-        showPreJoinView: false,
-        // You can add other configurations here if needed
-        // For example, to hide the top bar:
-        // showRoomDetailsButton: false,
-        // showLeavingView: false, // To prevent showing a leaving confirmation
-      });
-      setHasJoined(true); // Mark as joined to prevent re-initialization
-    }
-
-    // Clean up the Zego instance when the component unmounts
-    return () => {
-      if (zp) {
-        zp.destroy();
+    // Dynamically import ZegoUIKitPrebuilt on the client side
+    import("@zegocloud/zego-uikit-prebuilt").then(({ ZegoUIKitPrebuilt }) => {
+      const appID: number = Number(process.env.NEXT_PUBLIC_APP_ID);
+      const serverSecret: string = String(
+        process.env.NEXT_PUBLIC_SERVER_SECRET
+      );
+      console.log(`APP ID: ${appID}`);
+      console.log(`SERVER SECRET: ${serverSecret}`);
+      if (!appID || !serverSecret) {
+        alert("App ID or Server Secret is missing!");
+        return;
       }
-    };
+      const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
+        appID,
+        serverSecret,
+        roomID,
+        randomID(5),
+        randomID(5)
+      );
+      if (!kitToken) {
+        alert("Kit token is invalid!");
+        return;
+      }
+      const zp = ZegoUIKitPrebuilt.create(kitToken);
+      if (!zp) {
+        alert("ZegoUIKitPrebuilt.create returned undefined!");
+        return;
+      }
 
-  }, [roomID, hasJoined]); // Depend on roomID and hasJoined
+      if (containerRef.current) {
+        zp.joinRoom({
+          container: containerRef.current,
+          sharedLinks: [
+            {
+              name: "Personal link",
+              url:
+                window.location.protocol +
+                "//" +
+                window.location.host +
+                window.location.pathname +
+                "?roomID=" +
+                roomID,
+            },
+          ],
+          scenario: {
+            mode: ZegoUIKitPrebuilt.OneONoneCall,
+          },
+          showPreJoinView: false,
+          // You can add other configurations here if needed
+          // For example, to hide the top bar:
+          // showRoomDetailsButton: false,
+          // showLeavingView: false, // To prevent showing a leaving confirmation
+        });
+        setHasJoined(true);
+      }
+
+      // Clean up the Zego instance when the component unmounts
+      return () => {
+        if (zp) {
+          zp.destroy();
+        }
+      };
+    });
+  }, [roomID, hasJoined]);
 
   // The component will render this div, and the useEffect will attach the Zego UI to it
   return (

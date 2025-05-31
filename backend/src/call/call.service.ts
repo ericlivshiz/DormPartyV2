@@ -118,7 +118,17 @@ export class CallService {
     // we need to inform the user on queue that another user was found
     // Retrieve the socket instance using the ID
     const socket = this.server.sockets.sockets.get(availableUser.socketId);
-    if (!socket) return console.log('socket not connected'); // TODO: handle socket no longer connected (user left)
+    if (!socket) {
+      console.log('socket not connected, cleaning up and re-queuing current user');
+      // Optionally, re-register the current user so they can be matched again
+      await this.registerAvailableUser(currentUser);
+      client.emit('events', {
+        isUserFound: false,
+        message: 'The matched user disconnected. You are back in the queue.',
+        room: null,
+      });
+      return 0;
+    }
     socket.emit('call', socketResponse);
 
     client.emit('events', socketResponse);

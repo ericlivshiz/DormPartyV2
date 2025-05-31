@@ -38,7 +38,17 @@ export default function App() {
     return <div>Error: Room ID is missing. Please try matching again.</div>;
   }
 
-  let myMeeting: any = async (element: any) => {
+  // Create a ref for the container div
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [hasJoined, setHasJoined] = React.useState(false); // State to prevent re-joining
+
+  // Move the Zego SDK initialization and join logic into a useEffect
+  React.useEffect(() => {
+    // Only run this effect if roomID is available and we haven't joined yet
+    if (!roomID || hasJoined) {
+      return;
+    }
+
     const appID: number = Number(process.env.NEXT_PUBLIC_APP_ID);
     const serverSecret: string = String(process.env.NEXT_PUBLIC_SERVER_SECRET);
     console.log(`APP ID: ${appID}`);
@@ -63,36 +73,50 @@ export default function App() {
       alert("ZegoUIKitPrebuilt.create returned undefined!");
       return;
     }
-    zp.joinRoom({
-      container: element,
-      sharedLinks: [
-        {
-          name: "Personal link",
-          url:
-            window.location.protocol +
-            "//" +
-            window.location.host +
-            window.location.pathname +
-            "?roomID=" +
-            roomID,
-        },
-      ],
-      scenario: {
-        mode: ZegoUIKitPrebuilt.OneONoneCall,
-      },
-      // Add this option to disable the pre-join view
-      showPreJoinView: false,
-      // You can add other configurations here if needed
-      // For example, to hide the top bar:
-      // showRoomDetailsButton: false,
-      // showLeavingView: false, // To prevent showing a leaving confirmation
-    });
-  };
 
+    // Ensure the container ref is available before joining
+    if (containerRef.current) {
+      zp.joinRoom({
+        container: containerRef.current, // Use the ref here
+        sharedLinks: [
+          {
+            name: "Personal link",
+            url:
+              window.location.protocol +
+              "//" +
+              window.location.host +
+              window.location.pathname +
+              "?roomID=" +
+              roomID,
+          },
+        ],
+        scenario: {
+          mode: ZegoUIKitPrebuilt.OneONoneCall,
+        },
+        // Add this option to disable the pre-join view
+        showPreJoinView: false,
+        // You can add other configurations here if needed
+        // For example, to hide the top bar:
+        // showRoomDetailsButton: false,
+        // showLeavingView: false, // To prevent showing a leaving confirmation
+      });
+      setHasJoined(true); // Mark as joined to prevent re-initialization
+    }
+
+    // Clean up the Zego instance when the component unmounts
+    return () => {
+      if (zp) {
+        zp.destroy();
+      }
+    };
+
+  }, [roomID, hasJoined]); // Depend on roomID and hasJoined
+
+  // The component will render this div, and the useEffect will attach the Zego UI to it
   return (
     <div
       className="myCallContainer"
-      ref={myMeeting}
+      ref={containerRef} // Assign the ref to the div
       style={{ width: "100vw", height: "100vh" }}
     ></div>
   );

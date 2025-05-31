@@ -23,20 +23,9 @@ function randomID(len: number) {
 // }
 
 export default function App() {
+  // --- Move Hook calls to the top ---
   // Use the useSearchParams hook to get URL parameters
   const searchParams = useSearchParams();
-  const roomID = searchParams.get("roomID");
-
-  console.log(`Attempting to get roomID from URL: ${roomID}`); // Add log here
-
-  // Add a check: if roomID is missing, show an error or redirect
-  if (!roomID) {
-    // You might want to redirect back or show an error message
-    // For example:
-    // const router = useRouter(); // Need to import useRouter from 'next/navigation'
-    // React.useEffect(() => { router.push('/'); }, [router]);
-    return <div>Error: Room ID is missing. Please try matching again.</div>;
-  }
 
   // Create a ref for the container div
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -45,6 +34,9 @@ export default function App() {
   // Move the Zego SDK initialization and join logic into a useEffect
   React.useEffect(() => {
     // Only run this effect if roomID is available and we haven't joined yet
+    // Access searchParams inside useEffect if needed, or pass roomID as a dependency
+    const roomID = searchParams.get("roomID"); // Get roomID inside useEffect
+
     if (!roomID || hasJoined) {
       return;
     }
@@ -110,7 +102,23 @@ export default function App() {
       }
     };
 
-  }, [roomID, hasJoined]); // Depend on roomID and hasJoined
+  }, [searchParams, hasJoined]); // Depend on searchParams and hasJoined
+  // --- End Hook calls ---
+
+  // Now, the early return comes after the Hook calls
+  const roomID = searchParams.get("roomID"); // Get roomID again for the render logic
+
+  console.log(`Attempting to get roomID from URL: ${roomID}`); // Add log here
+
+  // Add a check: if roomID is missing, show an error or redirect
+  if (!roomID) {
+    // You might want to redirect back or show an error message
+    // For example:
+    // const router = useRouter(); // Need to import useRouter from 'next/navigation'
+    // React.useEffect(() => { router.push('/'); }, [router]);
+    return <div>Error: Room ID is missing. Please try matching again.</div>;
+  }
+
 
   // The component will render this div, and the useEffect will attach the Zego UI to it
   return (

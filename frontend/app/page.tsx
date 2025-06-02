@@ -24,7 +24,9 @@ export default function HomePage(): React.ReactElement {
     // switch state to connecting
     setStep('CONNECTING')
     // @ts-ignore
-    const socket = io(process.env.BACKEND_ENDPOINT)
+    const socket = io(process.env.NEXT_PUBLIC_WS_URL!, {
+      transports: ['websocket'], // this line ensures WS instead of polling
+    })
 
     socket.on('connect', async () => {
       await sleep(5000)

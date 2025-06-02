@@ -15,8 +15,8 @@ function randomID(len: number) {
   return result;
 }
 
-export default function App() {
-  // Hooks must be called unconditionally
+// --- Add this new component ---
+function RoomPageInner() {
   const searchParams = useSearchParams();
   const roomID = searchParams.get("roomID");
 
@@ -73,9 +73,6 @@ export default function App() {
             mode: ZegoUIKitPrebuilt.OneONoneCall,
           },
           showPreJoinView: false,
-          // For example, to hide the top bar:
-          // showRoomDetailsButton: false,
-          // showLeavingView: false,
         });
         setHasJoined(true);
       }
@@ -88,7 +85,6 @@ export default function App() {
     });
   }, [roomID, hasJoined]);
 
-  // Always render the container, but show an error if roomID is missing
   if (!roomID) {
     return <div>Error: Room ID is missing. Please try matching again.</div>;
   }
@@ -99,5 +95,14 @@ export default function App() {
       ref={containerRef}
       style={{ width: "100vw", height: "100vh" }}
     ></div>
+  );
+}
+
+// --- Update your default export to wrap in Suspense ---
+export default function App() {
+  return (
+    <React.Suspense fallback={<div>Loading...</div>}>
+      <RoomPageInner />
+    </React.Suspense>
   );
 }

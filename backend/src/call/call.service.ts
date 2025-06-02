@@ -13,7 +13,7 @@ import {
 import { Server, Socket } from 'socket.io';
 
 @Injectable()
-@WebSocketGateway(5555, { cors: { origin: '*' } })
+@WebSocketGateway({ cors: { origin: '*' } })
 export class CallService {
   @WebSocketServer()
   private readonly server: Server;

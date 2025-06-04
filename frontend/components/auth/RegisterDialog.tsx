@@ -11,19 +11,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { toast } from "sonner";
-import { signIn } from "next-auth/react"; // <-- Add this import
+import { signIn } from "next-auth/react";
 
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onShowLogin: () => void;
-  onSuccess?: () => void; // <-- Add this line
+  onSuccess?: () => void;
 }
 
 export function RegisterDialog({ open, onOpenChange, onShowLogin, onSuccess }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [username, setUsername] = useState(""); // <-- Add state for username
+  const [username, setUsername] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -59,14 +59,22 @@ export function RegisterDialog({ open, onOpenChange, onShowLogin, onSuccess }: P
         body: JSON.stringify({
           email,
           password,
-          username, // <-- Send username to backend
+          username,
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const data = await response.json();
+        // Handle specific error cases
         if (response.status === 409) {
           throw new Error(data.message || 'An account with this email already exists.');
+        }
+        if (response.status === 400) {
+          throw new Error(data.message || 'Invalid registration data.');
+        }
+        if (response.status === 500 && data.code === 'TABLE_NOT_FOUND') {
+          throw new Error('Database error. Please try again later.');
         }
         throw new Error(data.message || 'Registration failed');
       }

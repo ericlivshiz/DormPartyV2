@@ -1,6 +1,8 @@
+'use client';
+
 import SparklesEmoji from "@souhaildev/reactemojis/src/components/sparkles";
-import Typewriter from "./Typewriter";
-import AnimatedStars from "./AnimatedStars";
+import Typewriter from "./animations/Typewriter";
+import AnimatedStars from "./animations/AnimatedStars";
 import { Settings } from "lucide-react";
 import {
   DropdownMenu,
@@ -9,8 +11,24 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
+import { useState } from "react";
+import { LoginDialog } from "./auth/LoginDialog";
+import { useSession } from "next-auth/react";
 
 export default function Home({connect}: {connect: () => void}): React.ReactElement {
+  const [showLogin, setShowLogin] = useState(false);
+  const { data: session } = useSession();
+
+  const handleStartCall = () => {
+    if (session) {
+      // If user is already logged in, connect immediately
+      connect();
+    } else {
+      // If not logged in, show login dialog
+      setShowLogin(true);
+    }
+  };
+
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-[#121212] text-white p-4 md:p-8 font-[family-name:var(--font-geist-sans)]">
       {/* Settings dropdown */}
@@ -22,10 +40,16 @@ export default function Home({connect}: {connect: () => void}): React.ReactEleme
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-28 bg-[#1A1A1A] border-[#2A2A2A] ">
-            <DropdownMenuItem className="text-white hover:bg-[#2A2A2A] cursor-pointer text-center font-bold">
+            <DropdownMenuItem 
+              className="text-white hover:bg-[#2A2A2A] cursor-pointer text-center font-bold"
+              onClick={() => setShowLogin(true)}
+            >
               Login
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-white hover:bg-[#2A2A2A] cursor-pointer text-center font-bold">
+            <DropdownMenuItem 
+              className="text-white hover:bg-[#2A2A2A] cursor-pointer text-center font-bold"
+              onClick={() => setShowLogin(true)}
+            >
               Register
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -42,7 +66,7 @@ export default function Home({connect}: {connect: () => void}): React.ReactEleme
 
         <div className="flex flex-col gap-4">
           <button
-            onClick={connect}
+            onClick={handleStartCall}
             className="w-full bg-[#A855F7] text-white px-3.5 py-4 rounded-xl font-semibold hover:cursor-pointer hover:bg-[#9333EA] transition-all duration-200 shadow-lg shadow-[#A855F7]/20 flex items-center justify-center gap-2"
           >
             <span>Start Random Call</span>
@@ -50,6 +74,16 @@ export default function Home({connect}: {connect: () => void}): React.ReactEleme
           </button>
         </div>
       </div>
+
+      {/* Login Dialog */}
+      <LoginDialog 
+        open={showLogin} 
+        onOpenChange={setShowLogin}
+        onSuccess={() => {
+          // After successful login/registration, connect
+          connect();
+        }}
+      />
     </div>
   )
 }

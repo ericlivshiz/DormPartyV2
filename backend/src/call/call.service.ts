@@ -13,7 +13,15 @@ import {
 import { Server, Socket } from 'socket.io';
 
 @Injectable()
-@WebSocketGateway(5555, { cors: { origin: '*' } })
+@WebSocketGateway({
+  cors: {
+    origin: [
+      'https://dormpartyv2-production.up.railway.app',
+      'https://dormparty-v2-backend-production.up.railway.app'
+    ],
+    credentials: true,
+  }
+})
 export class CallService {
   @WebSocketServer()
   private readonly server: Server;

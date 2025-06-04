@@ -89,32 +89,10 @@ export default function RoomClient() {
   }
 
   return (
-    <div
-      style={{ width: "100vw", height: "100vh", position: 'relative' }}
-    >
       <div
         className="myCallContainer"
         ref={containerRef}
-        style={{ width: "100%", height: "100%" }}
+        style={{ width: "100%", height: "92vh" }}
       ></div>
-      <button
-        style={{
-          position: 'absolute',
-          bottom: '20px',
-          left: '60%',
-          transform: 'translateX(-50%)',
-          zIndex: 10,
-          padding: '10px 20px',
-          fontSize: '16px',
-          cursor: 'pointer',
-          backgroundColor: 'red',
-          color: 'white',
-          border: 'none',
-          borderRadius: '5px',
-        }}
-      >
-        Skip
-      </button>
-    </div>
   );
 }

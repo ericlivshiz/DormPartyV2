@@ -1,6 +1,7 @@
 "use client";
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 function randomID(len: number) {
   let result = "";
@@ -94,34 +95,35 @@ export default function App() {
   }
 
   return (
-    <div
-      style={{ width: "100vw", height: "100vh", position: 'relative' }} // Add position: 'relative' to the container
-    >
+    <Suspense fallback={<div>Loading...</div>}>
       <div
-        className="myCallContainer"
-        ref={containerRef}
-        style={{ width: "100%", height: "100%" }} // Adjust Zego container style
-      ></div>
-      {/* Add the Skip button */}
-      <button
-        style={{
-          position: 'absolute', // Position the button absolutely
-          bottom: '20px', // 20px from the bottom
-          left: '60%', // Center horizontally
-          transform: 'translateX(-50%)', // Adjust for button width
-          zIndex: 10, // Ensure button is above the video container
-          padding: '10px 20px',
-          fontSize: '16px',
-          cursor: 'pointer',
-          backgroundColor: 'red',
-          color: 'white',
-          border: 'none',
-          borderRadius: '5px',
-        }}
+        style={{ width: "100vw", height: "100vh", position: 'relative' }} // Add position: 'relative' to the container
       >
-        Skip
-      </button>
-    </div>
-    
+        <div
+          className="myCallContainer"
+          ref={containerRef}
+          style={{ width: "100%", height: "100%" }} // Adjust Zego container style
+        ></div>
+        {/* Add the Skip button */}
+        <button
+          style={{
+            position: 'absolute', // Position the button absolutely
+            bottom: '20px', // 20px from the bottom
+            left: '60%', // Center horizontally
+            transform: 'translateX(-50%)', // Adjust for button width
+            zIndex: 10, // Ensure button is above the video container
+            padding: '10px 20px',
+            fontSize: '16px',
+            cursor: 'pointer',
+            backgroundColor: 'red',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+          }}
+        >
+          Skip
+        </button>
+      </div>
+    </Suspense>
   );
 }

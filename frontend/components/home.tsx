@@ -1,11 +1,37 @@
-import { Button } from "@/components/ui/button"
 import SparklesEmoji from "@souhaildev/reactemojis/src/components/sparkles";
 import Typewriter from "./Typewriter";
 import AnimatedStars from "./AnimatedStars";
+import { Settings } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { Button } from "./ui/button";
 
 export default function Home({connect}: {connect: () => void}): React.ReactElement {
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-[#121212] text-white p-4 md:p-8 font-[family-name:var(--font-geist-sans)]">
+      {/* Settings dropdown */}
+      <div className="absolute top-4 right-4 z-20">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="text-white">
+              <Settings className="h-7 w-7" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-28 bg-[#1A1A1A] border-[#2A2A2A] ">
+            <DropdownMenuItem className="text-white hover:bg-[#2A2A2A] cursor-pointer text-center font-bold">
+              Login
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-white hover:bg-[#2A2A2A] cursor-pointer text-center font-bold">
+              Register
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
       {/* Animated stars background */}
       <AnimatedStars />
 

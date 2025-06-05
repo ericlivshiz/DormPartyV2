@@ -2,7 +2,6 @@ import { NextAuthOptions, DefaultSession } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { compare } from 'bcrypt';
 import { Pool } from 'pg';
-import { JWT } from 'next-auth/jwt';
 
 // Extend the built-in session types
 declare module 'next-auth' {

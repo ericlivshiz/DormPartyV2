@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { hash } from 'bcrypt';
 import { Pool } from 'pg';
+import crypto from 'crypto';
 
 // Create a connection pool
 const pool = new Pool({
@@ -53,14 +54,18 @@ export async function POST(request: Request) {
         const hashedPassword = await hash(password, 10);
         console.log('Password hashed successfully');
 
+        // Generate verification token
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+        const tokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
+
         // Test database connection
         await pool.query('SELECT NOW()');
         console.log('Database connection test successful');
 
-        // Insert user
+        // Insert user with verification token
         const result = await pool.query(
-          'INSERT INTO "user" (email, password, username) VALUES ($1, $2, $3) RETURNING id',
-          [email, hashedPassword, username]
+          'INSERT INTO "user" (email, password, username, verified, verification_token, token_expiry) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+          [email, hashedPassword, username, false, verificationToken, tokenExpiry]
         );
         
         console.log('User created successfully:', { 
@@ -68,27 +73,32 @@ export async function POST(request: Request) {
           userId: result.rows[0].id 
         });
 
-        // Send welcome email
+        // Send verification email
         try {
-          const welcomeEmailResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/auth/send-welcome-email`, {
+          const verificationEmailResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/auth/send-verification-email`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ email, username }),
+            body: JSON.stringify({ 
+              email, 
+              username,
+              verificationToken 
+            }),
           });
 
-          if (!welcomeEmailResponse.ok) {
-            console.error('Failed to send welcome email:', await welcomeEmailResponse.text());
+          if (!verificationEmailResponse.ok) {
+            console.error('Failed to send verification email:', await verificationEmailResponse.text());
           }
         } catch (emailError) {
-          console.error('Error sending welcome email:', emailError);
+          console.error('Error sending verification email:', emailError);
           // Don't fail registration if email fails
         }
         
         return NextResponse.json({ 
-          message: 'User created successfully',
-          userId: result.rows[0].id
+          message: 'User created successfully. Please check your email to verify your account.',
+          userId: result.rows[0].id,
+          requiresVerification: true
         }, { status: 201 });
       } catch (dbError) {
         console.error('Database error details:', {

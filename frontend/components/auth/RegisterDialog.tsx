@@ -109,10 +109,10 @@ export function RegisterDialog({ open, onOpenChange, onShowLogin, onSuccess }: P
           </DialogHeader>
           <div className="space-y-4 text-center">
             <p className="text-gray-300">
-              We've sent a verification link to <span className="text-white font-semibold">{email}</span>
+              We&apos;ve sent a verification link to <span className="text-white font-semibold">{email}</span>
             </p>
             <p className="text-gray-300">
-              Please check your email and click the link to verify your account. You'll be able to sign in after verification.
+              Please check your email and click the link to verify your account. You&apos;ll be able to sign in after verification.
             </p>
             <Button 
               onClick={handleSignInClick}

@@ -67,6 +67,24 @@ export async function POST(request: Request) {
           email, 
           userId: result.rows[0].id 
         });
+
+        // Send welcome email
+        try {
+          const welcomeEmailResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/auth/send-welcome-email`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, username }),
+          });
+
+          if (!welcomeEmailResponse.ok) {
+            console.error('Failed to send welcome email:', await welcomeEmailResponse.text());
+          }
+        } catch (emailError) {
+          console.error('Error sending welcome email:', emailError);
+          // Don't fail registration if email fails
+        }
         
         return NextResponse.json({ 
           message: 'User created successfully',

@@ -1,7 +1,27 @@
-import { NextAuthOptions } from 'next-auth';
+import { NextAuthOptions, DefaultSession } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { compare } from 'bcrypt';
 import { Pool } from 'pg';
+import { JWT } from 'next-auth/jwt';
+
+// Extend the built-in session types
+declare module 'next-auth' {
+  interface User {
+    verified?: boolean;
+  }
+  
+  interface Session {
+    user: {
+      verified?: boolean;
+    } & DefaultSession['user'];
+  }
+}
+
+declare module 'next-auth/jwt' {
+  interface JWT {
+    verified?: boolean;
+  }
+}
 
 // Setup Postgres connection
 const pool = new Pool({
@@ -40,6 +60,11 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        // Check if user is verified
+        if (!user.verified) {
+          throw new Error('Please verify your email before signing in');
+        }
+
         // Compare plaintext password with hashed password from db
         const passwordCorrect = await compare(credentials.password, user.password);
 
@@ -47,6 +72,7 @@ export const authOptions: NextAuthOptions = {
           return {
             id: user.id,
             email: user.email,
+            verified: user.verified,
           };
         }
 
@@ -54,4 +80,18 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.verified = user.verified;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.verified = token.verified;
+      }
+      return session;
+    },
+  },
 };

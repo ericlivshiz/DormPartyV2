@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { toast } from "sonner";
-import { signIn } from "next-auth/react";
 
 interface Props {
   open: boolean;
@@ -26,6 +25,7 @@ export function RegisterDialog({ open, onOpenChange, onShowLogin, onSuccess }: P
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
 
   // Helper to check for .edu email
   function isEduEmail(email: string) {
@@ -79,22 +79,11 @@ export function RegisterDialog({ open, onOpenChange, onShowLogin, onSuccess }: P
         throw new Error(data.message || 'Registration failed');
       }
 
-      // Automatically log in after successful registration
-      const loginResponse = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
-
-      if (loginResponse?.error) {
-        throw new Error("Account created, but automatic login failed. Please try logging in.");
-      }
-
-      onOpenChange(false);
+      // Show verification pending message
+      setVerificationSent(true);
       toast.success("Account created!", {
-        description: "Your account has been successfully created",
+        description: "Please check your email to verify your account",
       });
-      if (onSuccess) onSuccess();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "An error occurred during registration";
       setError(errorMessage);
@@ -110,6 +99,32 @@ export function RegisterDialog({ open, onOpenChange, onShowLogin, onSuccess }: P
     onOpenChange(false);
     onShowLogin();
   };
+
+  if (verificationSent) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-[425px] bg-[#1A1A1A] border border-[#2A2A2A] text-white rounded-2xl shadow-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-center text-white">Check Your Email</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 text-center">
+            <p className="text-gray-300">
+              We&apos;ve sent a verification link to <span className="text-white font-semibold">{email}</span>
+            </p>
+            <p className="text-gray-300">
+              Please check your email and click the link to verify your account. You&apos;ll be able to sign in after verification.
+            </p>
+            <Button 
+              onClick={handleSignInClick}
+              className="w-full bg-[#A855F7] text-white font-semibold rounded-xl hover:bg-[#9333EA] transition-all duration-200 shadow-lg shadow-[#A855F7]/20 hover:cursor-pointer"
+            >
+              Back to Sign In
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

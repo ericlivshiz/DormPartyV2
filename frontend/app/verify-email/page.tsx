@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 
-export default function VerifyEmail() {
+function VerifyEmailContent() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('');
   const router = useRouter();
@@ -85,5 +85,21 @@ export default function VerifyEmail() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function VerifyEmail() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#121212] flex items-center justify-center p-4">
+        <div className="w-full max-w-md p-8 bg-[#1A1A1A] rounded-2xl shadow-2xl border border-[#2A2A2A]">
+          <div className="text-center text-gray-300">
+            Loading...
+          </div>
+        </div>
+      </div>
+    }>
+      <VerifyEmailContent />
+    </Suspense>
   );
 } 
